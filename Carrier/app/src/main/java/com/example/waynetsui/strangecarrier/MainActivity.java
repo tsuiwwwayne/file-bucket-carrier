@@ -2,6 +2,7 @@ package com.example.waynetsui.strangecarrier;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -77,21 +78,20 @@ public class MainActivity extends AppCompatActivity implements ScanFragment.OnFr
             }
         });
 
-        // TODO: Call Host Key and Bucket Key APIs
+        // Call Host Key and Bucket Key APIs
         requestForUserKeyAndBucketKey();
 
     }
 
-    @Override
-    public void onDestroy() {
-        Log.d("SHIT", "onDestroy: AT ONDESTROY METHOD");
-        // TODO: Destroy Bucket
-//        deleteBucket(userKey, bucketKey);
-//        clientList.clear();
-//        MainActivityFragment frag = (MainActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
-//        frag.updateNumOfContributors();
-        super.onDestroy();
-    }
+//    @Override
+//    public void onDestroy() {
+//        Log.d("SHIT", "onDestroy: AT ONDESTROY METHOD");
+//        deleteBucket(userKey, bucketKey, false);
+////        clientList.clear();
+////        MainActivityFragment frag = (MainActivityFragment) getFragmentManager().findFragmentById(R.id.fragment);
+////        frag.updateNumOfContributors();
+//        super.onDestroy();
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -108,7 +108,8 @@ public class MainActivity extends AppCompatActivity implements ScanFragment.OnFr
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.delete_bucket) {
+            deleteBucket(userKey, bucketKey, true);
             return true;
         }
 
@@ -195,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements ScanFragment.OnFr
         queue.add(bucketKeyRequest);
     }
 
-    public void deleteBucket(String userKey, String bucketKey) {
+    public void deleteBucket(String userKey, String bucketKey, final boolean byChoice) {
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
         StringRequest destroyBucketRequest = new StringRequest(Request.Method.GET, BASE_URL + "/bucket/destroy" + "?user_key=" + userKey + "&bucket_key=" + bucketKey,
@@ -207,6 +208,14 @@ public class MainActivity extends AppCompatActivity implements ScanFragment.OnFr
                             JSONObject o = new JSONObject(response);
                             if (o.getBoolean("success")) {
                                 Log.d("shit", "onResponse: BUCKET DELETE SUCCESS");
+                                if (byChoice) {
+                                    Intent intent = getIntent();
+                                    overridePendingTransition(0, 0);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                                    finish();
+                                    overridePendingTransition(0, 0);
+                                    startActivity(intent);
+                                }
                             } else {
                                 Log.d("shit", "onResponse: BUCKET DELETE FAILED");
                             }

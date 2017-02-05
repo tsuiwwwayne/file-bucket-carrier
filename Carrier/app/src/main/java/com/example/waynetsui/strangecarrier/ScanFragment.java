@@ -4,8 +4,6 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -19,12 +17,10 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
-import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
@@ -40,6 +36,9 @@ import java.io.IOException;
  * create an instance of this fragment.
  */
 public class ScanFragment extends Fragment {
+
+    private static final String TAG = "ScanFragment";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -120,9 +119,6 @@ public class ScanFragment extends Fragment {
                         new String[]{Manifest.permission.CAMERA},
                         1);
 
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
             }
         } else {
             setUpQrCodeScanner();
@@ -158,7 +154,7 @@ public class ScanFragment extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        Log.d("shit", "onRequestPermissionsResult: " + requestCode);
+        Log.d(TAG, "onRequestPermissionsResult: " + requestCode);
         switch (requestCode) {
             case 1: {
                 // If request is cancelled, the result arrays are empty.
@@ -169,10 +165,10 @@ public class ScanFragment extends Fragment {
                     // contacts-related task you need to do.
 
                     setUpQrCodeScanner();
-                    Log.d("shit", "onRequestPermissionsResult: QR CODE SET UP");
+                    Log.d(TAG, "onRequestPermissionsResult: QR CODE SET UP");
 
                 } else {
-                    Log.d("shit", "onRequestPermissionsResult: QR CODE NOT SET UP");
+                    Log.d(TAG, "onRequestPermissionsResult: QR CODE NOT SET UP");
 
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.

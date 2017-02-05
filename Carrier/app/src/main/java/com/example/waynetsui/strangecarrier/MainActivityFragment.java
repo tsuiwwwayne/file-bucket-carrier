@@ -28,6 +28,8 @@ import java.util.ArrayList;
  */
 public class MainActivityFragment extends Fragment {
 
+    private static final String TAG = "MainActivityFragment";
+
     private ArrayList<String> clientList = new ArrayList<>();
     private String scannedClientKey;
 
@@ -50,34 +52,24 @@ public class MainActivityFragment extends Fragment {
         }
         clientList = ((MainActivity) getActivity()).getClientList();
         if (!clientList.contains(scannedClientKey) && scannedClientKey != null) {
-            clientList.add(scannedClientKey);
             for (int i=0; i < clientList.size(); i++) {
-                Log.d("shit", "onCreate: " + clientList.get(i));
+                Log.d(TAG, "onCreate: " + clientList.get(i));
             }
 
-            // TODO: Add new connection based on scannedClientKey
-            String userKey = ((MainActivity) getActivity()).getUserKey();
+            // Add new connection based on scannedClientKey
             String bucketKey = ((MainActivity) getActivity()).getBucketKey();
-            addConnection(userKey, bucketKey);
+            addConnection(scannedClientKey, bucketKey);
         }
 
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
-
-        final ListView listview = (ListView) view.findViewById(R.id.listview);
-        TextView tv = (TextView) view.findViewById(R.id.numberOfContributors);
-        Toast.makeText(getActivity().getApplicationContext(), String.valueOf(clientList.size()), Toast.LENGTH_SHORT);
+    public void refreshList() {
+        final ListView listview = (ListView) getView().findViewById(R.id.listview);
+        TextView tv = (TextView) getView().findViewById(R.id.numberOfContributors);
         int clientSize = clientList.size();
-        Log.d("shit", "onCreateView: " + clientSize);
-        if (clientSize > 0) {
-            String header = "Number of Contributors: " + String.valueOf(clientList.size());
-            tv.setText(header);
-        }
+        Log.d(TAG, "onCreateView: " + clientSize);
+        String header = "Contributors: " + String.valueOf(clientList.size());
+        tv.setText(header);
 
         final StableArrayAdapter adapter = new StableArrayAdapter(getActivity().getApplicationContext(),
                 R.layout.list_item, clientList);
@@ -95,19 +87,24 @@ public class MainActivityFragment extends Fragment {
                             public void run() {
                                 adapter.notifyDataSetChanged();
                                 view.setAlpha(1);
-                                clientList.remove(position);
-                                Log.d("shit", "run: " + position + " " + item);
-                                updateNumOfContributors();
 
-                                // TODO: Destroy connection for item
+                                // Destroy connection for item
                                 String userKey = ((MainActivity) getActivity()).getUserKey();
                                 String bucketKey = ((MainActivity) getActivity()).getBucketKey();
-                                removeConnection(userKey, bucketKey);
+                                removeConnection(item, bucketKey, userKey, position, adapter);
                             }
                         });
             }
 
         });
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
+
 
         FloatingActionButton floatingActionButton = ((MainActivity) getActivity()).getFab();
         if (floatingActionButton != null) {
@@ -117,15 +114,17 @@ public class MainActivityFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(View v, Bundle savedInstanceState) {
+        refreshList();
+    }
+
     public void updateNumOfContributors() {
         View view = getView();
         TextView tv = (TextView) view.findViewById(R.id.numberOfContributors);
         int clientSize = clientList.size();
-        Log.d("shit", "onCreateView: " + clientSize);
-        if (clientSize > 0) {
-            String header = "Number of Contributors: " + String.valueOf(clientList.size());
-            tv.setText(header);
-        }
+        String header = "Contributors: " + String.valueOf(clientSize);
+        tv.setText(header);
     }
 
     public void addConnection(final String userKey, final String bucketKey) {
@@ -136,13 +135,15 @@ public class MainActivityFragment extends Fragment {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.d("shit", "onResponse: "+ response);
+                        Log.d(TAG, "onResponse: "+ response);
                         try {
                             JSONObject o = new JSONObject(response);
                             if (o.getBoolean("success")) {
-                                Log.d("shit", "onResponse: CONNECTION ADDING SUCCESS");
+                                Log.d(TAG, "onResponse: CONNECTION ADDING SUCCESS");
+                                clientList.add(scannedClientKey);
+                                refreshList();
                             } else {
-                                Log.d("shit", "onResponse: CONNECTION ADDING FAILED");
+                                Log.d(TAG, "onResponse: CONNECTION ADDING FAILED");
                             }
 
                         } catch (Exception e) {
@@ -158,21 +159,24 @@ public class MainActivityFragment extends Fragment {
         queue.add(addConnectionRequest);
     }
 
-    public void removeConnection(final String userKey, final String bucketKey) {
+    public void removeConnection(final String userKey, final String bucketKey, final String requesterKey, final int position, final StableArrayAdapter adapter) {
         String BASE_URL = ((MainActivity) getActivity()).getBASE_URL();
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(getActivity());
-        StringRequest removeConnectionRequest = new StringRequest(Request.Method.GET, BASE_URL + "/connection/destroy" + "?user_key=" + userKey + "&bucket_key=" + bucketKey,
+        StringRequest removeConnectionRequest = new StringRequest(Request.Method.GET, BASE_URL + "/connection/destroy" + "?user_key=" + userKey + "&bucket_key=" + bucketKey + "&requester_key=" + requesterKey,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.d("shit", "onResponse: "+ response);
+                        Log.d(TAG, "onResponse: "+ response);
                         try {
                             JSONObject o = new JSONObject(response);
                             if (o.getBoolean("success")) {
-                                Log.d("shit", "onResponse: CONNECTION REMOVING SUCCESS");
+                                Log.d(TAG, "onResponse: CONNECTION REMOVING SUCCESS");
+                                clientList.remove(position);
+                                updateNumOfContributors();
+                                adapter.notifyDataSetChanged();
                             } else {
-                                Log.d("shit", "onResponse: CONNECTION REMOVING FAILED");
+                                Log.d(TAG, "onResponse: CONNECTION REMOVING FAILED");
                             }
 
                         } catch (Exception e) {

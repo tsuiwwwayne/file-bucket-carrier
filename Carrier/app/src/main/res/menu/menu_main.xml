@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.waynetsui.strangecarrier.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/delete_bucket"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/delete_bucket"
         app:showAsAction="never" />
 </menu>
