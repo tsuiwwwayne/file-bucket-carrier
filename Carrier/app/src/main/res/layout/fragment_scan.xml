@@ -1,18 +1,17 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scanFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.waynetsui.strangecarrier.ScanFragment">
 
-    <LinearLayout
+    <SurfaceView
+        android:id="@+id/camera_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="Hello World!!!!!!!"/>
-    </LinearLayout>
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        />
 
-</FrameLayout>
+</RelativeLayout>
